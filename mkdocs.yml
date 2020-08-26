@@ -8,5 +8,9 @@ theme:
   name: material
   custom_dir: overrides
 
+markdown_extensions:
+  - admonition
+
 nav:
   - Home: 'index.md'
+  - 'State creep': 'state-creep.md'
