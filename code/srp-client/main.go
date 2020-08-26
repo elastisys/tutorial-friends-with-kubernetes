@@ -56,10 +56,8 @@ func doAuth(baseURL *url.URL) {
 	resp, err = post(baseURL, "/auth/authenticate", body)
 
 	if err != nil {
-		panic(err)
-	}
-
-	if resp.StatusCode == 200 {
+		fmt.Println("LOW-LEVEL FAIL ❌")
+	} else if resp.StatusCode == 200 {
 		fmt.Println("PASS ✅")
 	} else {
 		fmt.Println("FAIL ❌")
