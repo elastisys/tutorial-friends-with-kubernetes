@@ -1,5 +1,5 @@
 site_name: Friends with Kubernetes
-site_url: https://friends-with-kubernetes.com
+site_url: https://elastisys.github.io/tutorial-friends-with-kubernetes/
 site_description: Learn how to avoid common pitfalls when porting your application to Kubernetes.
 site_author: Cristian Klein
 copyright: Copyright © 2020 Cristian Klein
