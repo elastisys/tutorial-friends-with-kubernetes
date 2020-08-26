@@ -13,4 +13,4 @@ markdown_extensions:
 
 nav:
   - Home: 'index.md'
-  - 'State creep': 'state-creep.md'
+  - 'State Creep': 'state-creep.md'
