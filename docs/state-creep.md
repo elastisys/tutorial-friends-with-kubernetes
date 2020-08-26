@@ -137,3 +137,5 @@ Great! We now have a service that we can properly scale up with zero downtime.
 * One of these expectations is for the application to be stateless. State must be stored in services that can handle state with care.
 * As legacy code is reused in new situations, state may creep into what we may believe is a stateless application.
 * Redis is a popular project to store short-lived "cache" state.
+
+But how do I detect state creep before it's too late? **Practice the rule of two.** Always have at least two replicas of every code.
