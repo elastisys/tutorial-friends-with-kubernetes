@@ -76,7 +76,12 @@ But wait! If `srp-server` is scaled to two replicas, what happens to the challen
 var authSessionCache = map[string](*srp.SRPServer){}
 ```
 
-As Kubernetes tries to balance the load across replicas, the likelihood of the client getting the challenge from one replica and authenticating against a different replica is high. There are several solutions to this problem:
+As Kubernetes tries to balance the load across replicas, the likelihood of the client getting the challenge from one replica and authenticating against a different replica is high.
+
+!!!note "Nobody makes such an obvious mistake!"
+    You might argue that this is a constructed problem, a mistake we sneaked in just to give purpose to this tutorial. And, of course, this is a minimal not-so-working example, so it may feel a bit artificial. But trust me! Our customers constantly bump into this. As legacy code is exposed to new situations, hidden behind layers and layers of libraries, state creep is a real barrier to Kubernetes adoption.
+
+There are several solutions to this problem:
 
 1. Push the state to the client: Given the nature of SRP, you would need to use [authenticated encryption](https://en.wikipedia.org/wiki/Authenticated_encryption) for that. The downside is that you need to change the client-server API.
 
@@ -89,3 +94,46 @@ Let's go for the last solution. It requires no API changes, and will prepare us 
 ## Moving the Challenge Cache to Redis
 
 [Redis](https://redis.io/) is a popular project in the cloud native ecosystem to store short-lived ("cache") state. While pushing state out of your service into ... another service may feel like cheating, Redis is well equipped to handle state: It supports multiple replicas, with proper state replication and fail-over. Of course, your service could implement such state handling too, but by the time you are done you essentially have *an ad hoc, informally-specified, bug-ridden, slow implementation of half of Redis*. ([Greenspun's tenth rule](https://en.wikipedia.org/wiki/Greenspun%27s_tenth_rule) for cloud native software?)
+
+Assuming I convinced you, let's spin up a Redis cluster:
+
+```
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install redis bitnami/redis
+```
+
+Now let's change the application to store the challenge cache in Redis. Thanks to the magic of tutorials, the source code is already available in `srp-server-redis`. I here assume that you are able to read Go code, although you are not required to be a Go programmer to understand this part. I suggest you look at the changes using side-by-side diff:
+
+```
+diff --exclude 'go.*' -ru srp-server srp-server-redis | less -S
+```
+
+Let us here briefly discuss the main changes. First, we replaced the `authSessionCache` global variable with a Redis client (see `srp-server.go`), which we use to set and get challenge caches. We took the opportunity to set an expire of 1 minute to each entry, something that the previous code didn't have. (How come the old `srp-server` didn't crash due to memory exhaution until now?)
+
+Second, we changed the Deployment to expose the Redis password (i.e., a Secret) and the Redis server address to `srp-server-redis` via environment variables.
+This is a very common pattern for configuring applications hosted in Kubernetes.
+
+So, does it work?
+
+```
+eval $(minikube docker-env)
+docker build -t srp-server-redis srp-server-redis
+kubectl apply -f srp-server-redis/deploy
+kubectl get pods
+```
+
+The client shows all green with a single `srp-server-redis` replica, but did we solve the original problem of scaling up?
+
+```
+kubectl scale --replicas=3 deployment/srp-server
+```
+
+Great! We now have a service that we can properly scale up with zero downtime.
+
+## Takeaways
+
+* Kubernetes promises to solve issues, such as scalability, fault-tolerance and zero-downtime updates.
+* To solve these issues, Kubernetes has certain expectations from the hosted application.
+* One of these expectations is for the application to be stateless. State must be stored in services that can handle state with care.
+* As legacy code is reused in new situations, state may creep into what we may believe is a stateless application.
+* Redis is a popular project to store short-lived "cache" state.
