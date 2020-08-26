@@ -40,4 +40,52 @@ kubectl run \
     http://$(minikube ip)
 ```
 
+![Screenshot: SRP Client Pass](img/screenshot-srp-client-pass.png)
+
 You should see a screen full of green checkboxes. Great success!
+
+## Trouble Ahead: Scaling Does Not Work
+
+The world is not a different place and your healthcare application is getting popular. Time to scale the SRP server up.
+
+Leave `srp-client` running and in a new terminal type:
+
+```
+kubectl scale --replicas=2 deployment/srp-server
+```
+
+And, as you wait for `srp-server` to scale up ...
+
+![Screenshot: SRP Client Fail](img/screenshot-srp-client-fail.png)
+
+... Auch! That does not look too good! Authentication failures are littering your terminal.
+
+Scared you scale the application back down. However, you feel the sour taste of Kubernetes failing its promise to facilitate scalability.
+
+## What Happened?
+
+Let us look closer at SRP. The sequence diagram from [simbo1905](https://github.com/simbo1905/thinbus-srp-npm) explains it best:
+
+![SRP login sequence diagram, produced by simbo1905](https://camo.githubusercontent.com/d3f3723e01f53e402f7186d157dcefbc215a41f6/687474703a2f2f73696d6f6e6d61737365792e6269746275636b65742e696f2f7468696e6275732f6c6f67696e2d63616368652e706e67)
+
+One item stands out: the challenge cache! Aha! The server needs to store some state between issuing a challenge and authenticating the client. It cannot trust the client to store this information, as this would void the security guarantees of SRP.
+
+But wait! If `srp-server` is scaled to two replicas, what happens to the challenge cache? A quick inspection of `code/srp-server/srp-server.go` reveals that the challenge cache is local to each replica:
+
+```
+var authSessionCache = map[string](*srp.SRPServer){}
+```
+
+As Kubernetes tries to balance the load across replicas, the likelihood of the client getting the challenge from one replica and authenticating against a different replica is high. There are several solutions to this problem:
+
+1. Push the state to the client: Given the nature of SRP, you would need to use [authenticated encryption](https://en.wikipedia.org/wiki/Authenticated_encryption) for that. The downside is that you need to change the client-server API.
+
+2. Sticky sessions or static source-IP load-balancing: This ensures that the client asks for a challenge and authenticates against the same replica. This is a quick fix, but will brings more issues down the road with scaling down, rolling updates, etc.
+
+3. Share the challenge cache: This ensures that each replica has access to the same challenge cache.
+
+Let's go for the last solution. It requires no API changes, and will prepare us for scaling down and rolling updates.
+
+## Moving the Challenge Cache to Redis
+
+[Redis](https://redis.io/) is a popular project in the cloud native ecosystem to store short-lived ("cache") state. While pushing state out of your service into ... another service may feel like cheating, Redis is well equiped to handle state: It supports multiple replicas, with proper state replication and fail-over. Of course, your service could implement such state handling too, but by the time you are done you essentially have *an ad hoc, informally-specified, bug-ridden, slow implementation of half of Redis*. ([Greenspun's tenth rule](https://en.wikipedia.org/wiki/Greenspun%27s_tenth_rule) for cloud native software?)
