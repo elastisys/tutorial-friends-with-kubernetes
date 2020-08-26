@@ -26,10 +26,10 @@ After completing this tutorial:
 
 ## Preparations
 
-You will need basic shell scripting tools, such as `bash`, `curl` and `make`. Here is how you install them in Ubuntu:
+You will need basic shell scripting tools, such as `bash`, `curl`, `git` and `make`. Here is how you install them in Ubuntu:
 
 ```
-sudo apt-get install bash curl make
+sudo apt-get install bash curl git make
 ```
 
 Furthermore, you will need:
