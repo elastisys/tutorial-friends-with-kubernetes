@@ -7,3 +7,6 @@ copyright: Copyright © 2020 Cristian Klein
 theme:
   name: material
   custom_dir: overrides
+
+nav:
+  - Home: 'index.md'
