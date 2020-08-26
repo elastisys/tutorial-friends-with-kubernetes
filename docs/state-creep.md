@@ -46,7 +46,7 @@ You should see a screen full of green checkboxes. Great success!
 
 ## Trouble Ahead: Scaling Does Not Work
 
-The world is not a different place and your healthcare application is getting popular. Time to scale the SRP server up.
+The world is now a different place and your healthcare application is getting popular. Time to scale the SRP server up.
 
 Leave `srp-client` running and in a new terminal type:
 
