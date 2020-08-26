@@ -1,0 +1,499 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Learn how to avoid common pitfalls when porting your application to Kubernetes.">
+      
+      
+        <link rel="canonical" href="https://friends-with-kubernetes.com/state-creep/">
+      
+      
+        <meta name="author" content="Cristian Klein">
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.8">
+    
+    
+      
+        <title>State Creep - Friends with Kubernetes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.01afc2df.min.css">
+      
+      
+    
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#running-on-kubernetes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href="https://friends-with-kubernetes.com" title="Friends with Kubernetes" class="md-header-nav__button md-logo" aria-label="Friends with Kubernetes">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            Friends with Kubernetes
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              State Creep
+            
+          </span>
+        </div>
+      
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+        
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="https://friends-with-kubernetes.com" title="Friends with Kubernetes" class="md-nav__button md-logo" aria-label="Friends with Kubernetes">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Friends with Kubernetes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Home" class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        State Creep
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9h14V7H3v2m0 4h14v-2H3v2m0 4h14v-2H3v2m16 0h2v-2h-2v2m0-10v2h2V7h-2m0 6h2v-2h-2v2z"/></svg>
+        </span>
+      </label>
+    
+    <a href="./" title="State Creep" class="md-nav__link md-nav__link--active">
+      State Creep
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-on-kubernetes" class="md-nav__link">
+    Running on Kubernetes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trouble-ahead-scaling-does-not-work" class="md-nav__link">
+    Trouble Ahead: Scaling Does Not Work
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-happened" class="md-nav__link">
+    What Happened?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#moving-the-challenge-cache-to-redis" class="md-nav__link">
+    Moving the Challenge Cache to Redis
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#takeaways" class="md-nav__link">
+    Takeaways
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-on-kubernetes" class="md-nav__link">
+    Running on Kubernetes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trouble-ahead-scaling-does-not-work" class="md-nav__link">
+    Trouble Ahead: Scaling Does Not Work
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-happened" class="md-nav__link">
+    What Happened?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#moving-the-challenge-cache-to-redis" class="md-nav__link">
+    Moving the Challenge Cache to Redis
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#takeaways" class="md-nav__link">
+    Takeaways
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  
+                
+                
+                  <h1>State Creep</h1>
+                
+                <p>Imagine the following situation. You are working in a regulated environment, such as <a href="https://elastisys.com/hipaa-compliance-kubernetes-privacy-rule/">healthcare</a>. You want to make sure that your user's passwords are safe, hence you use <a href="https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol">Secure Remote Password protocol (SRP)</a> for authentication. In brief, SRP does not require the client to send the password to the server, nor the server to store the password. Instead, a sophisticated exchange allows the client to prove to the server that it knows the password. Similarly, the client can verify that the server knows the password.</p>
+<h2 id="running-on-kubernetes">Running on Kubernetes</h2>
+<p>The SRP server of your company was coded years ago. Let us run it on top of Kubernetes:</p>
+<pre><code>git clone https://github.com/elastisys/tutorial-friends-with-kubernetes
+cd tutorial-friends-with-kubernetes/code
+</code></pre>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To simplify this tutorial, the <code>srp-server</code> includes a hard-coded database with a single test user.</p>
+</div>
+<p>Thanks to the magic of ready-made tutorials, the Dockerfile and Kubernetes resources are already written.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To simplify this tutorial, you will build the container image directly inside the Docker Daemon of Minikube. Usually, you should push container images to a registry.</p>
+</div>
+<pre><code>eval $(minikube docker-env)
+docker build -t srp-server srp-server
+kubectl apply -f srp-server/deploy
+
+kubectl get pods
+</code></pre>
+
+<p>Awesome! The SRP server seems to work. That was really easy. Let's check if it can actually perform logins:</p>
+<pre><code>eval $(minikube docker-env)
+docker build -t srp-client srp-client
+kubectl run \
+    -ti \
+    --rm \
+    --generator=run-pod/v1 \
+    --image srp-client \
+    --image-pull-policy Never \
+    srp-client \
+    http://$(minikube ip)
+</code></pre>
+
+<p><img alt="Screenshot: SRP Client Pass" src="../img/screenshot-srp-client-pass.png" /></p>
+<p>You should see a screen full of green checkboxes. Great success!</p>
+<h2 id="trouble-ahead-scaling-does-not-work">Trouble Ahead: Scaling Does Not Work</h2>
+<p>The world is not a different place and your healthcare application is getting popular. Time to scale the SRP server up.</p>
+<p>Leave <code>srp-client</code> running and in a new terminal type:</p>
+<pre><code>kubectl scale --replicas=2 deployment/srp-server
+</code></pre>
+
+<p>And, as you wait for <code>srp-server</code> to scale up ...</p>
+<p><img alt="Screenshot: SRP Client Fail" src="../img/screenshot-srp-client-fail.png" /></p>
+<p>... Auch! That does not look too good! Authentication failures are littering your terminal.</p>
+<p>Scared you scale the application back down. However, you feel the sour taste of Kubernetes failing its promise to facilitate scalability.</p>
+<h2 id="what-happened">What Happened?</h2>
+<p>Let us look closer at SRP. The sequence diagram from <a href="https://github.com/simbo1905/thinbus-srp-npm">simbo1905</a> explains it best:</p>
+<p><img alt="SRP login sequence diagram, produced by simbo1905" src="https://camo.githubusercontent.com/d3f3723e01f53e402f7186d157dcefbc215a41f6/687474703a2f2f73696d6f6e6d61737365792e6269746275636b65742e696f2f7468696e6275732f6c6f67696e2d63616368652e706e67" /></p>
+<p>One item stands out: the challenge cache! Aha! The server needs to store some state between issuing a challenge and authenticating the client. It cannot trust the client to store this information, as this would void the security guarantees of SRP.</p>
+<p>But wait! If <code>srp-server</code> is scaled to two replicas, what happens to the challenge cache? A quick inspection of <code>code/srp-server/srp-server.go</code> reveals that the challenge cache is local to each replica:</p>
+<pre><code>var authSessionCache = map[string](*srp.SRPServer){}
+</code></pre>
+
+<p>As Kubernetes tries to balance the load across replicas, the likelihood of the client getting the challenge from one replica and authenticating against a different replica is high.</p>
+<div class="admonition note">
+<p class="admonition-title">Nobody makes such an obvious mistake!</p>
+<p>You might argue that this is a constructed problem, a mistake we sneaked in just to give purpose to this tutorial. And, of course, this is a minimal not-so-working example, so it may feel a bit artificial. But trust me! Our customers constantly bump into this. As legacy code is exposed to new situations, hidden behind layers and layers of libraries, state creep is a real barrier to Kubernetes adoption.</p>
+</div>
+<p>There are several solutions to this problem:</p>
+<ol>
+<li>
+<p>Push the state to the client: Given the nature of SRP, you would need to use <a href="https://en.wikipedia.org/wiki/Authenticated_encryption">authenticated encryption</a> for that. The downside is that you need to change the client-server API.</p>
+</li>
+<li>
+<p>Sticky sessions or static source-IP load-balancing: This ensures that the client asks for a challenge and authenticates against the same replica. This is a quick fix, but will brings more issues down the road with scaling down, rolling updates, etc.</p>
+</li>
+<li>
+<p>Share the challenge cache: This ensures that each replica has access to the same challenge cache.</p>
+</li>
+</ol>
+<p>Let's go for the last solution. It requires no API changes, and will prepare us for scaling down and rolling updates.</p>
+<h2 id="moving-the-challenge-cache-to-redis">Moving the Challenge Cache to Redis</h2>
+<p><a href="https://redis.io/">Redis</a> is a popular project in the cloud native ecosystem to store short-lived ("cache") state. While pushing state out of your service into ... another service may feel like cheating, Redis is well equipped to handle state: It supports multiple replicas, with proper state replication and fail-over. Of course, your service could implement such state handling too, but by the time you are done you essentially have <em>an ad hoc, informally-specified, bug-ridden, slow implementation of half of Redis</em>. (<a href="https://en.wikipedia.org/wiki/Greenspun%27s_tenth_rule">Greenspun's tenth rule</a> for cloud native software?)</p>
+<p>Assuming I convinced you, let's spin up a Redis cluster:</p>
+<pre><code>helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install redis bitnami/redis
+</code></pre>
+
+<p>Now let's change the application to store the challenge cache in Redis. Thanks to the magic of tutorials, the source code is already available in <code>srp-server-redis</code>. I here assume that you are able to read Go code, although you are not required to be a Go programmer to understand this part. I suggest you look at the changes using side-by-side diff:</p>
+<pre><code>diff --exclude 'go.*' -ru srp-server srp-server-redis | less -S
+</code></pre>
+
+<p>Let us here briefly discuss the main changes. First, we replaced the <code>authSessionCache</code> global variable with a Redis client (see <code>srp-server.go</code>), which we use to set and get challenge caches. We took the opportunity to set an expire of 1 minute to each entry, something that the previous code didn't have. (How come the old <code>srp-server</code> didn't crash due to memory exhaution until now?)</p>
+<p>Second, we changed the Deployment to expose the Redis password (i.e., a Secret) and the Redis server address to <code>srp-server-redis</code> via environment variables.
+This is a very common pattern for configuring applications hosted in Kubernetes.</p>
+<p>So, does it work?</p>
+<pre><code>eval $(minikube docker-env)
+docker build -t srp-server-redis srp-server-redis
+kubectl apply -f srp-server-redis/deploy
+kubectl get pods
+</code></pre>
+
+<p>The client shows all green with a single <code>srp-server-redis</code> replica, but did we solve the original problem of scaling up?</p>
+<pre><code>kubectl scale --replicas=3 deployment/srp-server
+</code></pre>
+
+<p>Great! We now have a service that we can properly scale up with zero downtime.</p>
+<h2 id="takeaways">Takeaways</h2>
+<ul>
+<li>Kubernetes promises to solve issues, such as scalability, fault-tolerance and zero-downtime updates.</li>
+<li>To solve these issues, Kubernetes has certain expectations from the hosted application.</li>
+<li>One of these expectations is for the application to be stateless. State must be stored in services that can handle state with care.</li>
+<li>As legacy code is reused in new situations, state may creep into what we may believe is a stateless application.</li>
+<li>Redis is a popular project to store short-lived "cache" state.</li>
+</ul>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href=".." title="Home" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Home
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright © 2020 Cristian Klein
+          </div>
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/vendor.df0def68.min.js"></script>
+      <script src="../assets/javascripts/bundle.ba57d267.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      
+      <script>
+        app = initialize({
+          base: "..",
+          features: [],
+          search: Object.assign({
+            worker: "../assets/javascripts/worker/search.fae956e7.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+    
+  </body>
+</html>
