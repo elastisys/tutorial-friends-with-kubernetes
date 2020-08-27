@@ -62,4 +62,4 @@ docker ps > /dev/null && echo "==> minikube's docker works"
 helm version > /dev/null && echo "==> helm works"
 ```
 
-You are ready to get started!
+Click *Next* below to get started!
