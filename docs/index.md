@@ -8,7 +8,7 @@ HackerNews comments on any Kubernetes-related article tend to fall in three cate
 
 3. People that did bump into the problems that Kubernetes solves, but didn't manage to effectively use Kubernetes to solve said problems.
 
-This tutorial is for the latter.
+This tutorial is for the third category.
 
 ## Goals
 
