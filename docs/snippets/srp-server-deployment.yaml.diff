@@ -1,0 +1,12 @@
+@@ -18 +18 @@
+-      - image: srp-server:latest
++      - image: srp-server-redis:latest
+@@ -20,0 +21,8 @@
++        env:
++          - name: REDIS_MASTER
++            value: "redis-master:6379"
++          - name: REDIS_PASSWORD
++            valueFrom:
++              secretKeyRef:
++                name: redis
++                key: "redis-password"

@@ -39,7 +39,7 @@ Furthermore, you will need:
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)
 
-Start a Minikube cluster:
+We will use Minikube to provision a small, local Kubernetes cluster. Start a Minikube cluster as follows:
 
 ```
 minikube start

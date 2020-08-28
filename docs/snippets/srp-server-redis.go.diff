@@ -1,0 +1,46 @@
+@@ -12 +17 @@
+-var authSessionCache = map[string](*srp.SRPServer){}
++var rdb *redis.Client
+@@ -63 +68,11 @@ func handleChallenge(w http.ResponseWrit
+-	authSessionCache[username] = server
++	data, err := json.Marshal(&server)
++	if err != nil {
++		handleError(w, http.StatusInternalServerError, fmt.Sprintf("%v", err))
++		return
++	}
++
++	err = rdb.Set(r.Context(), username, data, time.Minute).Err()
++	if err != nil {
++		handleError(w, http.StatusInternalServerError, fmt.Sprintf("%v", err))
++		return
++	}
+@@ -78,4 +93,10 @@ func handleAuthentication(w http.Respons
+-	server, ok := authSessionCache[areq.Username]
+-	defer delete(authSessionCache, areq.Username)
+-	if !ok {
+-		handleError(w, http.StatusBadRequest, "No authentication session found")
++	data, err := rdb.Get(r.Context(), areq.Username).Bytes()
++	if err != nil {
++		handleError(w, http.StatusBadRequest, fmt.Sprintf("No authentication session found: %v", err))
++		return
++	}
++
++	server := srp.SRPServer{}
++	err = json.Unmarshal(data, &server)
++	if err != nil {
++		handleError(w, http.StatusInternalServerError, fmt.Sprintf("Couldn't unmarshall authentication session: %v", err))
+@@ -88 +109 @@ func handleAuthentication(w http.Respons
+-		handleError(w, http.StatusUnauthorized, "Invalid username or password")
++		handleError(w, http.StatusUnauthorized, fmt.Sprintf("Invalid username or password: %v", err))
+@@ -97,0 +119,11 @@ func main() {
++
++	rdb = redis.NewClient(&redis.Options{
++		Addr:     os.Getenv("REDIS_MASTER"),
++		Password: os.Getenv("REDIS_PASSWORD"),
++		DB:       0, // use default DB
++	})
++
++	pong, err := rdb.Ping(context.Background()).Result()
++	if err != nil {
++		log.Fatalln(pong, err)
++	}
