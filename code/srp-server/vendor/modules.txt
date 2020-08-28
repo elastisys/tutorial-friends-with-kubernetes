@@ -1,0 +1,2 @@
+# github.com/Kong/go-srp v0.0.0-20191210190804-cde1efa3c083
+github.com/Kong/go-srp
