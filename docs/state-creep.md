@@ -1,4 +1,4 @@
-In this part, we will show via a hands-on example a common problem with porting application to Kubernetes: **state creep**. Although a service may seem stateless, large legacy codes hidden behind layers of libraries leads to state "creeping" unexpectedly. We start by presenting such a service with state creep, what does wrong when deploying it on top of Kubernetes and how to fix it.
+In this part, we will show via a hands-on example a common problem with porting application to Kubernetes: **state creep**. Although a service may seem stateless, large legacy codes hidden behind layers of libraries leads to state "creeping" unexpectedly. We start by presenting such a service with state creep, what goes wrong when deploying it on top of Kubernetes and how to fix it.
 
 ## Illustrative Example
 
