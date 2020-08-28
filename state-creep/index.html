@@ -55,7 +55,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#running-on-kubernetes" class="md-skip">
+        <a href="#illustrative-example" class="md-skip">
           Skip to content
         </a>
       
@@ -200,6 +200,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#illustrative-example" class="md-nav__link">
+    Illustrative Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#running-on-kubernetes" class="md-nav__link">
     Running on Kubernetes
   </a>
@@ -265,6 +272,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#illustrative-example" class="md-nav__link">
+    Illustrative Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#running-on-kubernetes" class="md-nav__link">
     Running on Kubernetes
   </a>
@@ -317,61 +331,188 @@
                 
                   <h1>State Creep</h1>
                 
-                <p>Imagine the following situation. You are working in a regulated environment, such as <a href="https://elastisys.com/hipaa-compliance-kubernetes-privacy-rule/">healthcare</a>. You want to make sure that your user's passwords are safe, hence you use <a href="https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol">Secure Remote Password protocol (SRP)</a> for authentication. In brief, SRP does not require the client to send the password to the server, nor the server to store the password. Instead, a sophisticated exchange allows the client to prove to the server that it knows the password. Similarly, the client can verify that the server knows the password.</p>
+                <p>In this part, we will show via a hands-on example a common problem with porting application to Kubernetes: <strong>state creep</strong>. Although a service may seem stateless, large legacy codes hidden behind layers of libraries leads to state "creeping" unexpectedly. We start by presenting such a service with state creep, what goes wrong when deploying it on top of Kubernetes and how to fix it.</p>
+<h2 id="illustrative-example">Illustrative Example</h2>
+<p>Imagine the following situation. You are working in a regulated environment, such as <a href="https://elastisys.com/hipaa-compliance-kubernetes-privacy-rule/">healthcare</a>. You want to make sure that your users' passwords are safe, hence you use <a href="https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol">Secure Remote Password protocol (SRP)</a> for authentication. In brief, SRP does not require the client to send the password to the server, nor the server to store the password. Instead, a sophisticated exchange allows the client to prove to the server that it knows the password. Similarly, the client can verify that the server knows the password. For now, that is all you need to know about SRP.</p>
 <h2 id="running-on-kubernetes">Running on Kubernetes</h2>
 <p>The SRP server of your company was coded years ago. Let us run it on top of Kubernetes:</p>
-<pre><code>git clone https://github.com/elastisys/tutorial-friends-with-kubernetes
-cd tutorial-friends-with-kubernetes/code
-</code></pre>
+<div class="highlight"><pre><span></span><code>git clone https://github.com/elastisys/tutorial-friends-with-kubernetes
+<span class="nb">cd</span> tutorial-friends-with-kubernetes/code
+</code></pre></div>
 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>To simplify this tutorial, the <code>srp-server</code> includes a hard-coded database with a single test user.</p>
 </div>
 <p>Thanks to the magic of ready-made tutorials, the Dockerfile and Kubernetes resources are already written.</p>
+<div class="tabbed-set" data-tabs="1:4"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Dockerfile</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code><span class="k">FROM</span> <span class="s">golang:alpine</span> <span class="k">as</span> <span class="s">builder</span>
+
+<span class="k">WORKDIR</span><span class="s"> /go/src/app</span>
+
+<span class="k">COPY</span> . .
+<span class="k">RUN</span> <span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span> <span class="nv">GOOS</span><span class="o">=</span>linux go build -a -o /main -mod<span class="o">=</span>vendor
+
+<span class="k">FROM</span> <span class="s">golang:latest</span>
+<span class="k">COPY</span> --from<span class="o">=</span>builder /main /main
+<span class="k">RUN</span> ls -l /
+<span class="k">ENTRYPOINT</span> <span class="p">[</span><span class="s2">&quot;/main&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+</div>
+<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">srp-server-deployment.yaml</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">apps/v1</span>
+<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Deployment</span>
+<span class="nt">metadata</span><span class="p">:</span>
+  <span class="nt">labels</span><span class="p">:</span>
+    <span class="nt">app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
+<span class="nt">spec</span><span class="p">:</span>
+  <span class="nt">replicas</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+  <span class="nt">selector</span><span class="p">:</span>
+    <span class="nt">matchLabels</span><span class="p">:</span>
+      <span class="nt">app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
+  <span class="nt">template</span><span class="p">:</span>
+    <span class="nt">metadata</span><span class="p">:</span>
+      <span class="nt">labels</span><span class="p">:</span>
+        <span class="nt">app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
+    <span class="nt">spec</span><span class="p">:</span>
+      <span class="nt">containers</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server:latest</span>
+        <span class="nt">imagePullPolicy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Never</span>
+        <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
+</code></pre></div>
+
+</div>
+<input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><label for="__tabbed_1_3">srp-server-service.yaml</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Service</span>
+<span class="nt">metadata</span><span class="p">:</span>
+  <span class="nt">labels</span><span class="p">:</span>
+    <span class="nt">app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
+<span class="nt">spec</span><span class="p">:</span>
+  <span class="nt">ports</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">http</span>
+    <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">8080</span>
+  <span class="nt">selector</span><span class="p">:</span>
+    <span class="nt">app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
+</code></pre></div>
+
+</div>
+<input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><label for="__tabbed_1_4">srp-server-ingress.yaml</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">networking.k8s.io/v1beta1</span>
+<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Ingress</span>
+<span class="nt">metadata</span><span class="p">:</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
+  <span class="nt">labels</span><span class="p">:</span>
+    <span class="nt">app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
+<span class="nt">spec</span><span class="p">:</span>
+  <span class="nt">rules</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">http</span><span class="p">:</span>
+      <span class="nt">paths</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/auth</span>
+        <span class="nt">pathType</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Prefix</span>
+        <span class="nt">backend</span><span class="p">:</span>
+          <span class="nt">serviceName</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
+          <span class="nt">servicePort</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">8080</span>
+</code></pre></div>
+
+</div>
+</div>
+<p>If you are familiar with Go applications, then the Dockerfile should be straight forward. Otherwise, you may want to read <a href="https://www.docker.com/blog/containerize-your-go-developer-environment-part-1/">how to containerize Go applications</a>.</p>
+<p>For running the application in Kubernetes, we need three concepts. The <a href="https://kubernetes.io/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/">Deployment</a> ensures that our code is running in the cluster, i.e., that at least one Pod is running. The <a href="https://kubernetes.io/docs/concepts/services-networking/service/">Service</a> points to the running Pods, so they can be found inside the cluster. Finally, the <a href="https://kubernetes.io/docs/concepts/services-networking/ingress/">Ingress</a> allows traffic to flow from outside the cluster to the Service inside the cluster.</p>
+<p>Now let's build the container image:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>To simplify this tutorial, you will build the container image directly inside the Docker Daemon of Minikube. Usually, you should push container images to a registry.</p>
 </div>
-<pre><code>eval $(minikube docker-env)
+<div class="highlight"><pre><span></span><code><span class="nb">eval</span> <span class="k">$(</span>minikube docker-env<span class="k">)</span>
 docker build -t srp-server srp-server
-kubectl apply -f srp-server/deploy
+</code></pre></div>
 
-kubectl get pods
-</code></pre>
+<p>And deploy the application in the Kubernetes cluster:</p>
+<div class="highlight"><pre><span></span><code>kubectl apply -f srp-server/deploy
+</code></pre></div>
 
-<p>Awesome! The SRP server seems to work. That was really easy. Let's check if it can actually perform logins:</p>
-<pre><code>eval $(minikube docker-env)
+<p>Looks good. Now let's check if the Pods are comming up:</p>
+<div class="highlight"><pre><span></span><code>kubectl get pods
+</code></pre></div>
+
+<p>You should see something like this:</p>
+<div class="highlight"><pre><span></span><code>NAME                          READY   STATUS    RESTARTS   AGE
+srp-server-7f7dfc86fd-tt2rv   1/1     Running   0          5s
+</code></pre></div>
+
+<p>Awesome! The SRP server seems to work. That was really easy. Let's check if it can actually perform logins. To this end, we will build <code>srp-client</code> and use <code>kubectl run</code> to run it interactively inside the cluster.</p>
+<div class="highlight"><pre><span></span><code><span class="nb">eval</span> <span class="k">$(</span>minikube docker-env<span class="k">)</span>
 docker build -t srp-client srp-client
-kubectl run \
-    -ti \
-    --rm \
-    --generator=run-pod/v1 \
-    --image srp-client \
-    --image-pull-policy Never \
-    srp-client \
-    http://$(minikube ip)
-</code></pre>
+kubectl run <span class="se">\</span>
+    -ti <span class="se">\</span>
+    --rm <span class="se">\</span>
+    --generator<span class="o">=</span>run-pod/v1 <span class="se">\</span>
+    --image srp-client <span class="se">\</span>
+    --image-pull-policy Never <span class="se">\</span>
+    srp-client <span class="se">\</span>
+    http://<span class="k">$(</span>minikube ip<span class="k">)</span>
+</code></pre></div>
 
+<p>You should see a screen full of green checkboxes, as shown in the screenshot below.</p>
 <p><img alt="Screenshot: SRP Client Pass" src="../img/screenshot-srp-client-pass.png" /></p>
-<p>You should see a screen full of green checkboxes. Great success!</p>
+<p>Great success!</p>
 <h2 id="trouble-ahead-scaling-does-not-work">Trouble Ahead: Scaling Does Not Work</h2>
-<p>The world is now a different place and your healthcare application is getting popular. Time to scale the SRP server up.</p>
+<p>The world is now a different place and your healthcare application is getting popular. Time to scale the SRP server up. Kubernetes should make this straight-forward thanks to the <code>kubectl scale</code> command.</p>
 <p>Leave <code>srp-client</code> running and in a new terminal type:</p>
-<pre><code>kubectl scale --replicas=2 deployment/srp-server
-</code></pre>
+<div class="highlight"><pre><span></span><code>kubectl scale --replicas=2 deployment/srp-server
+</code></pre></div>
 
 <p>And, as you wait for <code>srp-server</code> to scale up ...</p>
 <p><img alt="Screenshot: SRP Client Fail" src="../img/screenshot-srp-client-fail.png" /></p>
 <p>... Auch! That does not look too good! Authentication failures are littering your terminal.</p>
-<p>Scared you scale the application back down. However, you feel the sour taste of Kubernetes failing its promise to facilitate scalability.</p>
+<p>Let's check if there is something wrong with Kubernetes:</p>
+<div class="highlight"><pre><span></span><code>kubectl get pods
+</code></pre></div>
+
+<p>You should see something like this:</p>
+<div class="highlight"><pre><span></span><code>NAME                          READY   STATUS    RESTARTS   AGE
+srp-server-7f7dfc86fd-tsxjp   1/1     Running   0          3s
+srp-server-7f7dfc86fd-tt2rv   1/1     Running   0          8m38s
+</code></pre></div>
+
+<p>Both Pods <code>srp-server</code> seem fine. Their status is <code>Running</code>, they feature no restarts.</p>
+<p>Let's check if the application shows some suspicious logs:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We can use <code>-l app=srp-server</code> to express interest in all Pods of <code>srp-server</code>. This is because the Deployment includes the following snippet:
+<div class="highlight"><pre><span></span><code>metadata:
+  labels:
+    app: srp-server
+</code></pre></div></p>
+</div>
+<div class="highlight"><pre><span></span><code>kubectl logs -l <span class="nv">app</span><span class="o">=</span>srp-server
+</code></pre></div>
+
+<p>You should see something like this:</p>
+<div class="highlight"><pre><span></span><code>2020/08/28 09:04:02 Challenge sent for &quot;test@example.com&quot;
+2020/08/28 09:04:01 Error: &quot;No authentication session found&quot;
+2020/08/28 09:04:01 Challenge sent for &quot;test@example.com&quot;
+2020/08/28 09:04:01 Error: &quot;Invalid username or password&quot;
+2020/08/28 09:04:01 Error: &quot;No authentication session found&quot;
+</code></pre></div>
+
+<p>Okey, so client requests obviously arrive at <code>srp-service</code> but the logs are littered with errors!</p>
+<p>The users are obviously impacted, so let's scale the application back down:</p>
+<div class="highlight"><pre><span></span><code>kubectl scale --replicas=1 deployment/srp-server
+</code></pre></div>
+
+<p>Fortunately, the errors are gone now. However, what remains is the sour aftertaste of Kubernetes failing its promise to facilitate scalability.</p>
 <h2 id="what-happened">What Happened?</h2>
-<p>Let us look closer at SRP. The sequence diagram from <a href="https://github.com/simbo1905/thinbus-srp-npm">simbo1905</a> explains it best:</p>
+<p>It sadly became obvious that we cannot simply deploy the application without understanding how it works. Let us look closer at SRP. The sequence diagram from <a href="https://github.com/simbo1905/thinbus-srp-npm">simbo1905</a> explains it best:</p>
 <p><img alt="SRP login sequence diagram, produced by simbo1905" src="https://camo.githubusercontent.com/d3f3723e01f53e402f7186d157dcefbc215a41f6/687474703a2f2f73696d6f6e6d61737365792e6269746275636b65742e696f2f7468696e6275732f6c6f67696e2d63616368652e706e67" /></p>
-<p>One item stands out: the challenge cache! Aha! The server needs to store some state between issuing a challenge and authenticating the client. It cannot trust the client to store this information, as this would void the security guarantees of SRP.</p>
+<p>In essence, SRP is composed of two requests, challenge and authenticate, initiated by the client. It almost looks like the flow is stateless, except for one item that stands out: the challenge cache! Aha! The server needs to store some state between issuing a challenge and authenticating the client. It cannot trust the client to store this information, as this would void the security guarantees of SRP.</p>
 <p>But wait! If <code>srp-server</code> is scaled to two replicas, what happens to the challenge cache? A quick inspection of <code>code/srp-server/srp-server.go</code> reveals that the challenge cache is local to each replica:</p>
-<pre><code>var authSessionCache = map[string](*srp.SRPServer){}
-</code></pre>
+<div class="highlight"><pre><span></span><code>var authSessionCache = map[string](*srp.SRPServer){}
+</code></pre></div>
 
 <p>As Kubernetes tries to balance the load across replicas, the likelihood of the client getting the challenge from one replica and authenticating against a different replica is high.</p>
 <div class="admonition note">
@@ -381,41 +522,114 @@ kubectl run \
 <p>There are several solutions to this problem:</p>
 <ol>
 <li>
-<p>Push the state to the client: Given the nature of SRP, you would need to use <a href="https://en.wikipedia.org/wiki/Authenticated_encryption">authenticated encryption</a> for that. The downside is that you need to change the client-server API.</p>
+<p><strong>Push the state to the client:</strong> Given the nature of SRP, you would need to use <a href="https://en.wikipedia.org/wiki/Authenticated_encryption">authenticated encryption</a> for that. The downside is that you need to change the client-server API.</p>
 </li>
 <li>
-<p>Sticky sessions or static source-IP load-balancing: This ensures that the client asks for a challenge and authenticates against the same replica. This is a quick fix, but will brings more issues down the road with scaling down, rolling updates, etc.</p>
+<p><strong>Sticky sessions or static source-IP load-balancing:</strong> This ensures that the client asks for a challenge and authenticates against the same replica. This is a quick fix, but will brings more issues down the road with scaling down, rolling updates, etc.</p>
 </li>
 <li>
-<p>Share the challenge cache: This ensures that each replica has access to the same challenge cache.</p>
+<p><strong>Share the challenge cache:</strong> This ensures that each replica has access to the same challenge cache.</p>
 </li>
 </ol>
 <p>Let's go for the last solution. It requires no API changes, and will prepare us for scaling down and rolling updates.</p>
 <h2 id="moving-the-challenge-cache-to-redis">Moving the Challenge Cache to Redis</h2>
 <p><a href="https://redis.io/">Redis</a> is a popular project in the cloud native ecosystem to store short-lived ("cache") state. While pushing state out of your service into ... another service may feel like cheating, Redis is well equipped to handle state: It supports multiple replicas, with proper state replication and fail-over. Of course, your service could implement such state handling too, but by the time you are done you essentially have <em>an ad hoc, informally-specified, bug-ridden, slow implementation of half of Redis</em>. (<a href="https://en.wikipedia.org/wiki/Greenspun%27s_tenth_rule">Greenspun's tenth rule</a> for cloud native software?)</p>
 <p>Assuming I convinced you, let's spin up a Redis cluster:</p>
-<pre><code>helm repo add bitnami https://charts.bitnami.com/bitnami
+<div class="highlight"><pre><span></span><code>helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install redis bitnami/redis
-</code></pre>
+</code></pre></div>
 
 <p>Now let's change the application to store the challenge cache in Redis. Thanks to the magic of tutorials, the source code is already available in <code>srp-server-redis</code>. I here assume that you are able to read Go code, although you are not required to be a Go programmer to understand this part. I suggest you look at the changes using side-by-side diff:</p>
-<pre><code>diff --exclude 'go.*' -ru srp-server srp-server-redis | less -S
-</code></pre>
+<div class="highlight"><pre><span></span><code>diff --exclude <span class="s1">&#39;go.*&#39;</span> -ru srp-server srp-server-redis <span class="p">|</span> less -S
+</code></pre></div>
 
+<details class="note"><summary>Selected output of diff</summary><div class="tabbed-set" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">diff of srp-server.go</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code><span class="gu">@@ -12 +17 @@</span>
+<span class="gd">-var authSessionCache = map[string](*srp.SRPServer){}</span>
+<span class="gi">+var rdb *redis.Client</span>
+<span class="gu">@@ -63 +68,11 @@ func handleChallenge(w http.ResponseWrit</span>
+<span class="gd">-   authSessionCache[username] = server</span>
+<span class="gi">+   data, err := json.Marshal(&amp;server)</span>
+<span class="gi">+   if err != nil {</span>
+<span class="gi">+       handleError(w, http.StatusInternalServerError, fmt.Sprintf(&quot;%v&quot;, err))</span>
+<span class="gi">+       return</span>
+<span class="gi">+   }</span>
+<span class="gi">+</span>
+<span class="gi">+   err = rdb.Set(r.Context(), username, data, time.Minute).Err()</span>
+<span class="gi">+   if err != nil {</span>
+<span class="gi">+       handleError(w, http.StatusInternalServerError, fmt.Sprintf(&quot;%v&quot;, err))</span>
+<span class="gi">+       return</span>
+<span class="gi">+   }</span>
+<span class="gu">@@ -78,4 +93,10 @@ func handleAuthentication(w http.Respons</span>
+<span class="gd">-   server, ok := authSessionCache[areq.Username]</span>
+<span class="gd">-   defer delete(authSessionCache, areq.Username)</span>
+<span class="gd">-   if !ok {</span>
+<span class="gd">-       handleError(w, http.StatusBadRequest, &quot;No authentication session found&quot;)</span>
+<span class="gi">+   data, err := rdb.Get(r.Context(), areq.Username).Bytes()</span>
+<span class="gi">+   if err != nil {</span>
+<span class="gi">+       handleError(w, http.StatusBadRequest, fmt.Sprintf(&quot;No authentication session found: %v&quot;, err))</span>
+<span class="gi">+       return</span>
+<span class="gi">+   }</span>
+<span class="gi">+</span>
+<span class="gi">+   server := srp.SRPServer{}</span>
+<span class="gi">+   err = json.Unmarshal(data, &amp;server)</span>
+<span class="gi">+   if err != nil {</span>
+<span class="gi">+       handleError(w, http.StatusInternalServerError, fmt.Sprintf(&quot;Couldn&#39;t unmarshall authentication session: %v&quot;, err))</span>
+<span class="gu">@@ -88 +109 @@ func handleAuthentication(w http.Respons</span>
+<span class="gd">-       handleError(w, http.StatusUnauthorized, &quot;Invalid username or password&quot;)</span>
+<span class="gi">+       handleError(w, http.StatusUnauthorized, fmt.Sprintf(&quot;Invalid username or password: %v&quot;, err))</span>
+<span class="gu">@@ -97,0 +119,11 @@ func main() {</span>
+<span class="gi">+</span>
+<span class="gi">+   rdb = redis.NewClient(&amp;redis.Options{</span>
+<span class="gi">+       Addr:     os.Getenv(&quot;REDIS_MASTER&quot;),</span>
+<span class="gi">+       Password: os.Getenv(&quot;REDIS_PASSWORD&quot;),</span>
+<span class="gi">+       DB:       0, // use default DB</span>
+<span class="gi">+   })</span>
+<span class="gi">+</span>
+<span class="gi">+   pong, err := rdb.Ping(context.Background()).Result()</span>
+<span class="gi">+   if err != nil {</span>
+<span class="gi">+       log.Fatalln(pong, err)</span>
+<span class="gi">+   }</span>
+</code></pre></div>
+
+</div>
+<input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><label for="__tabbed_2_2">diff of deploy/srp-server-deployment.yaml</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code><span class="gu">@@ -18 +18 @@</span>
+<span class="gd">-      - image: srp-server:latest</span>
+<span class="gi">+      - image: srp-server-redis:latest</span>
+<span class="gu">@@ -20,0 +21,8 @@</span>
+<span class="gi">+        env:</span>
+<span class="gi">+          - name: REDIS_MASTER</span>
+<span class="gi">+            value: &quot;redis-master:6379&quot;</span>
+<span class="gi">+          - name: REDIS_PASSWORD</span>
+<span class="gi">+            valueFrom:</span>
+<span class="gi">+              secretKeyRef:</span>
+<span class="gi">+                name: redis</span>
+<span class="gi">+                key: &quot;redis-password&quot;</span>
+</code></pre></div>
+
+</div>
+</div>
+</details>
 <p>Let us here briefly discuss the main changes. First, we replaced the <code>authSessionCache</code> global variable with a Redis client (see <code>srp-server.go</code>), which we use to set and get challenge caches. We took the opportunity to set an expire of 1 minute to each entry, something that the previous code didn't have. (How come the old <code>srp-server</code> didn't crash due to memory exhaution until now?)</p>
-<p>Second, we changed the Deployment to expose the Redis password (i.e., a Secret) and the Redis server address to <code>srp-server-redis</code> via environment variables.
+<p>Second, we changed the Deployment to expose the Redis password (i.e., a <a href="https://kubernetes.io/docs/concepts/configuration/secret/">Secret</a>) and the Redis server address to <code>srp-server-redis</code> via environment variables.
 This is a very common pattern for configuring applications hosted in Kubernetes.</p>
 <p>So, does it work?</p>
-<pre><code>eval $(minikube docker-env)
+<div class="highlight"><pre><span></span><code><span class="nb">eval</span> <span class="k">$(</span>minikube docker-env<span class="k">)</span>
 docker build -t srp-server-redis srp-server-redis
 kubectl apply -f srp-server-redis/deploy
 kubectl get pods
-</code></pre>
+</code></pre></div>
 
-<p>The client shows all green with a single <code>srp-server-redis</code> replica, but did we solve the original problem of scaling up?</p>
-<pre><code>kubectl scale --replicas=3 deployment/srp-server
-</code></pre>
+<p>Look at the terminal where the client is running. You should see all green with a single <code>srp-server-redis</code> replica, but did we solve the original problem of scaling up?</p>
+<div class="highlight"><pre><span></span><code>kubectl scale --replicas<span class="o">=</span><span class="m">3</span> deployment/srp-server
+</code></pre></div>
 
+<p>Let's watch the replicas coming up:</p>
+<div class="highlight"><pre><span></span><code>kubectl get pods
+</code></pre></div>
+
+<p>Now look at the client terminal. There should be zero impact on your client requests and you should see all green.</p>
 <p>Great! We now have a service that we can properly scale up with zero downtime.</p>
 <h2 id="takeaways">Takeaways</h2>
 <ul>

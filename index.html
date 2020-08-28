@@ -321,8 +321,8 @@
 </ul>
 <h2 id="preparations">Preparations</h2>
 <p>You will need basic shell scripting tools, such as <code>bash</code>, <code>curl</code>, <code>git</code> and <code>make</code>. Here is how you install them in Ubuntu:</p>
-<pre><code>sudo apt-get install bash curl git make
-</code></pre>
+<div class="highlight"><pre><span></span><code>sudo apt-get install bash curl git make
+</code></pre></div>
 
 <p>Furthermore, you will need:</p>
 <ul>
@@ -331,22 +331,22 @@
 <li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/">kubectl</a></li>
 <li><a href="https://kubernetes.io/docs/tasks/tools/install-minikube/">minikube</a></li>
 </ul>
-<p>Start a Minikube cluster:</p>
-<pre><code>minikube start
-</code></pre>
+<p>We will use Minikube to provision a small, local Kubernetes cluster. Start a Minikube cluster as follows:</p>
+<div class="highlight"><pre><span></span><code>minikube start
+</code></pre></div>
 
 <p>We will need the Ingress addons:</p>
-<pre><code>minikube addons enable ingress
-</code></pre>
+<div class="highlight"><pre><span></span><code>minikube addons enable ingress
+</code></pre></div>
 
 <p>Check that everything works, as follows:</p>
-<pre><code>kubectl get -n kube-system deploy ingress-nginx-controller &gt; /dev/null &amp;&amp; echo &quot;==&gt; kubectl and minikube work&quot;
+<div class="highlight"><pre><span></span><code>kubectl get -n kube-system deploy ingress-nginx-controller &gt; /dev/null &amp;&amp; echo &quot;==&gt; kubectl and minikube work&quot;
 
 eval $(minikube docker-env)
-docker ps &gt; /dev/null &amp;&amp; echo &quot;==&gt; minikube's docker works&quot;
+docker ps &gt; /dev/null &amp;&amp; echo &quot;==&gt; minikube&#39;s docker works&quot;
 
 helm version &gt; /dev/null &amp;&amp; echo &quot;==&gt; helm works&quot;
-</code></pre>
+</code></pre></div>
 
 <p>Click <em>Next</em> below to get started!</p>
                 
