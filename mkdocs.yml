@@ -10,6 +10,11 @@ theme:
 
 markdown_extensions:
   - admonition
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed
 
 nav:
   - Home: 'index.md'

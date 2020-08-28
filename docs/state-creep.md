@@ -18,6 +18,23 @@ cd tutorial-friends-with-kubernetes/code
 
 Thanks to the magic of ready-made tutorials, the Dockerfile and Kubernetes resources are already written.
 
+=== "Dockerfile"
+    ``` Dockerfile
+    --8<-- "code/srp-server/Dockerfile"
+    ```
+=== "srp-server-deployment.yaml"
+    ``` yaml
+    --8<-- "code/srp-server/deploy/srp-server-deployment.yaml"
+    ```
+=== "srp-server-service.yaml"
+    ``` yaml
+    --8<-- "code/srp-server/deploy/srp-server-service.yaml"
+    ```
+=== "srp-server-ingress.yaml"
+    ``` yaml
+    --8<-- "code/srp-server/deploy/srp-server-ingress.yaml"
+    ```
+
 !!!note
     To simplify this tutorial, you will build the container image directly inside the Docker Daemon of Minikube. Usually, you should push container images to a registry.
 
