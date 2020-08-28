@@ -1,3 +1,7 @@
+In this part, we will show via a hands-on example a common problem with porting application to Kubernetes: **state creep**. Although a service may seem stateless, large legacy codes hidden behind layers of libraries leads to state "creeping" unexpectedly. We start by presenting such a service with state creep, what does wrong when deploying it on top of Kubernetes and how to fix it.
+
+## Illustrative Example
+
 Imagine the following situation. You are working in a regulated environment, such as [healthcare](https://elastisys.com/hipaa-compliance-kubernetes-privacy-rule/). You want to make sure that your user's passwords are safe, hence you use [Secure Remote Password protocol (SRP)](https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol) for authentication. In brief, SRP does not require the client to send the password to the server, nor the server to store the password. Instead, a sophisticated exchange allows the client to prove to the server that it knows the password. Similarly, the client can verify that the server knows the password.
 
 ## Running on Kubernetes
