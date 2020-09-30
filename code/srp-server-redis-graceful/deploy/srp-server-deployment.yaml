@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: srp-server
+  name: srp-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: srp-server
+  template:
+    metadata:
+      labels:
+        app: srp-server
+    spec:
+      containers:
+      - image: srp-server-redis:latest
+        imagePullPolicy: Never
+        name: srp-server
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/bash", "-c", "sleep 10"]
+        env:
+          - name: REDIS_MASTER
+            value: "redis-master:6379"
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: redis
+                key: "redis-password"
