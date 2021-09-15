@@ -1,6 +1,4 @@
 
-
-
 <!doctype html>
 <html lang="en" class="no-js">
   <head>
@@ -11,13 +9,14 @@
         <meta name="description" content="Learn how to avoid common pitfalls when porting your application to Kubernetes.">
       
       
-        <link rel="canonical" href="https://elastisys.github.io/tutorial-friends-with-kubernetes/state-creep/">
-      
       
         <meta name="author" content="Cristian Klein">
       
-      <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.8">
+      
+        <link rel="canonical" href="https://elastisys.github.io/tutorial-friends-with-kubernetes/state-creep/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.3">
     
     
       
@@ -25,16 +24,20 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.01afc2df.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.e35208c4.min.css">
       
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ef6f36e2.min.css">
+        
       
     
     
     
       
-        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
       
     
     
@@ -42,7 +45,7 @@
     
       
         
-<script>window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","UA-36723568-3","auto"),ga("set","anonymizeIp",!0),ga("send","pageview"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){if(this.value){var e=document.location.pathname;ga("send","pageview",e+"?q="+this.value)}})}),document.addEventListener("DOMContentSwitch",function(){ga("send","pageview",document.location.pathname)})</script>
+<script>window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","UA-36723568-3","auto"),ga("set","anonymizeIp",!0),ga("send","pageview"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){var e;this.value&&(e=document.location.pathname,ga("send","pageview",e+"?q="+this.value))}),"undefined"!=typeof location$&&location$.subscribe(function(e){ga("send","pageview",e.pathname)})})</script>
 <script async src="https://www.google-analytics.com/analytics.js"></script>
       
     
@@ -50,8 +53,15 @@
   </head>
   
   
-    <body dir="ltr">
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
   
+    
+    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -69,46 +79,50 @@
     </div>
     
       <header class="md-header" data-md-component="header">
-  <nav class="md-header-nav md-grid" aria-label="Header">
-    <a href="https://elastisys.github.io/tutorial-friends-with-kubernetes/" title="Friends with Kubernetes" class="md-header-nav__button md-logo" aria-label="Friends with Kubernetes">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Friends with Kubernetes" class="md-header__button md-logo" aria-label="Friends with Kubernetes" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
 
     </a>
-    <label class="md-header-nav__button md-icon" for="__drawer">
+    <label class="md-header__button md-icon" for="__drawer">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
     </label>
-    <div class="md-header-nav__title" data-md-component="header-title">
-      
-        <div class="md-header-nav__ellipsis">
-          <span class="md-header-nav__topic md-ellipsis">
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
             Friends with Kubernetes
           </span>
-          <span class="md-header-nav__topic md-ellipsis">
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
             
               State Creep
             
           </span>
         </div>
-      
+      </div>
     </div>
     
-      <label class="md-header-nav__button md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
       </label>
       
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
       <label class="md-search__icon md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
       </label>
-      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
       </button>
     </form>
     <div class="md-search__output">
@@ -125,12 +139,12 @@
 </div>
     
     
-      <div class="md-header-nav__source">
+      <div class="md-header__source">
         
-<a href="https://github.com/elastisys/tutorial-friends-with-kubernetes/" title="Go to repository" class="md-source">
+<a href="https://github.com/elastisys/tutorial-friends-with-kubernetes/" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -143,8 +157,6 @@
     
     <div class="md-container" data-md-component="container">
       
-        
-      
       
         
       
@@ -152,15 +164,19 @@
         <div class="md-main__inner md-grid">
           
             
-              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
-                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="https://elastisys.github.io/tutorial-friends-with-kubernetes/" title="Friends with Kubernetes" class="md-nav__button md-logo" aria-label="Friends with Kubernetes">
+    <a href=".." title="Friends with Kubernetes" class="md-nav__button md-logo" aria-label="Friends with Kubernetes" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
 
     </a>
     Friends with Kubernetes
@@ -168,10 +184,10 @@
   
     <div class="md-nav__source">
       
-<a href="https://github.com/elastisys/tutorial-friends-with-kubernetes/" title="Go to repository" class="md-source">
+<a href="https://github.com/elastisys/tutorial-friends-with-kubernetes/" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -185,12 +201,15 @@
       
       
 
-
-  <li class="md-nav__item">
-    <a href=".." title="Home" class="md-nav__link">
-      Home
-    </a>
-  </li>
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
 
     
       
@@ -198,36 +217,36 @@
       
 
   
-
-
-  <li class="md-nav__item md-nav__item--active">
+  
     
-    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    
-    
-      <label class="md-nav__link md-nav__link--active" for="__toc">
-        State Creep
-        <span class="md-nav__icon md-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9h14V7H3v2m0 4h14v-2H3v2m0 4h14v-2H3v2m16 0h2v-2h-2v2m0-10v2h2V7h-2m0 6h2v-2h-2v2z"/></svg>
-        </span>
-      </label>
-    
-    <a href="./" title="State Creep" class="md-nav__link md-nav__link--active">
-      State Creep
-    </a>
-    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
       
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          State Creep
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        State Creep
+      </a>
+      
+        
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
+  
     <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-      </span>
+      <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
-    <ul class="md-nav__list" data-md-scrollfix>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
   <a href="#illustrative-example" class="md-nav__link">
@@ -274,8 +293,9 @@
     </ul>
   
 </nav>
-    
-  </li>
+      
+    </li>
+  
 
     
   </ul>
@@ -285,7 +305,8 @@
               </div>
             
             
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -293,13 +314,12 @@
   
   
   
+  
     <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-      </span>
+      <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
-    <ul class="md-nav__list" data-md-scrollfix>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
   <a href="#illustrative-example" class="md-nav__link">
@@ -351,16 +371,13 @@
               </div>
             
           
-          <div class="md-content">
+          <div class="md-content" data-md-component="content">
             <article class="md-content__inner md-typeset">
               
                 
                   <a href="https://github.com/elastisys/tutorial-friends-with-kubernetes/edit/master/docs/state-creep.md" title="Edit this page" class="md-content__button md-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
                   </a>
-                
-                
-                  
                 
                 
                   <h1>State Creep</h1>
@@ -373,7 +390,6 @@
 <div class="highlight"><pre><span></span><code>git clone https://github.com/elastisys/tutorial-friends-with-kubernetes
 <span class="nb">cd</span> tutorial-friends-with-kubernetes/code
 </code></pre></div>
-
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>To simplify this tutorial, the <code>srp-server</code> includes a hard-coded database with a single test user.</p>
@@ -392,7 +408,6 @@
 <span class="k">RUN</span> ls -l /
 <span class="k">ENTRYPOINT</span> <span class="p">[</span><span class="s2">&quot;/main&quot;</span><span class="p">]</span>
 </code></pre></div>
-
 </div>
 <input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">srp-server-deployment.yaml</label><div class="tabbed-content">
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">apps/v1</span>
@@ -416,7 +431,6 @@
         <span class="nt">imagePullPolicy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Never</span>
         <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
 </code></pre></div>
-
 </div>
 <input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><label for="__tabbed_1_3">srp-server-service.yaml</label><div class="tabbed-content">
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">v1</span>
@@ -432,7 +446,6 @@
   <span class="nt">selector</span><span class="p">:</span>
     <span class="nt">app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
 </code></pre></div>
-
 </div>
 <input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><label for="__tabbed_1_4">srp-server-ingress.yaml</label><div class="tabbed-content">
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">networking.k8s.io/v1beta1</span>
@@ -451,7 +464,6 @@
           <span class="nt">serviceName</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">srp-server</span>
           <span class="nt">servicePort</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">8080</span>
 </code></pre></div>
-
 </div>
 </div>
 <p>If you are familiar with Go applications, then the Dockerfile should be straight forward. Otherwise, you may want to read <a href="https://www.docker.com/blog/containerize-your-go-developer-environment-part-1/">how to containerize Go applications</a>.</p>
@@ -464,20 +476,16 @@
 <div class="highlight"><pre><span></span><code><span class="nb">eval</span> <span class="k">$(</span>minikube docker-env<span class="k">)</span>
 docker build -t srp-server srp-server
 </code></pre></div>
-
 <p>And deploy the application in the Kubernetes cluster:</p>
 <div class="highlight"><pre><span></span><code>kubectl apply -f srp-server/deploy
 </code></pre></div>
-
 <p>Looks good. Now let's check if the Pods are comming up:</p>
 <div class="highlight"><pre><span></span><code>kubectl get pods
 </code></pre></div>
-
 <p>You should see something like this:</p>
 <div class="highlight"><pre><span></span><code>NAME                          READY   STATUS    RESTARTS   AGE
 srp-server-7f7dfc86fd-tt2rv   1/1     Running   0          5s
 </code></pre></div>
-
 <p>Awesome! The SRP server seems to work. That was really easy. Let's check if it can actually perform logins. To this end, we will build <code>srp-client</code> and use <code>kubectl run</code> to run it interactively inside the cluster.</p>
 <div class="highlight"><pre><span></span><code><span class="nb">eval</span> <span class="k">$(</span>minikube docker-env<span class="k">)</span>
 docker build -t srp-client srp-client
@@ -490,7 +498,6 @@ kubectl run <span class="se">\</span>
     srp-client <span class="se">\</span>
     http://<span class="k">$(</span>minikube ip<span class="k">)</span>
 </code></pre></div>
-
 <p>You should see a screen full of green checkboxes, as shown in the screenshot below.</p>
 <p><img alt="Screenshot: SRP Client Pass" src="../img/screenshot-srp-client-pass.png" /></p>
 <p>Great success!</p>
@@ -499,20 +506,17 @@ kubectl run <span class="se">\</span>
 <p>Leave <code>srp-client</code> running and in a new terminal type:</p>
 <div class="highlight"><pre><span></span><code>kubectl scale --replicas=2 deployment/srp-server
 </code></pre></div>
-
 <p>And, as you wait for <code>srp-server</code> to scale up ...</p>
 <p><img alt="Screenshot: SRP Client Fail" src="../img/screenshot-srp-client-fail.png" /></p>
 <p>... Auch! That does not look too good! Authentication failures are littering your terminal.</p>
 <p>Let's check if there is something wrong with Kubernetes:</p>
 <div class="highlight"><pre><span></span><code>kubectl get pods
 </code></pre></div>
-
 <p>You should see something like this:</p>
 <div class="highlight"><pre><span></span><code>NAME                          READY   STATUS    RESTARTS   AGE
 srp-server-7f7dfc86fd-tsxjp   1/1     Running   0          3s
 srp-server-7f7dfc86fd-tt2rv   1/1     Running   0          8m38s
 </code></pre></div>
-
 <p>Both Pods <code>srp-server</code> seem fine. Their status is <code>Running</code>, they feature no restarts.</p>
 <p>Let's check if the application shows some suspicious logs:</p>
 <div class="admonition note">
@@ -525,7 +529,6 @@ srp-server-7f7dfc86fd-tt2rv   1/1     Running   0          8m38s
 </div>
 <div class="highlight"><pre><span></span><code>kubectl logs -l <span class="nv">app</span><span class="o">=</span>srp-server
 </code></pre></div>
-
 <p>You should see something like this:</p>
 <div class="highlight"><pre><span></span><code>2020/08/28 09:04:02 Challenge sent for &quot;test@example.com&quot;
 2020/08/28 09:04:01 Error: &quot;No authentication session found&quot;
@@ -533,12 +536,10 @@ srp-server-7f7dfc86fd-tt2rv   1/1     Running   0          8m38s
 2020/08/28 09:04:01 Error: &quot;Invalid username or password&quot;
 2020/08/28 09:04:01 Error: &quot;No authentication session found&quot;
 </code></pre></div>
-
 <p>Okey, so client requests obviously arrive at <code>srp-service</code> but the logs are littered with errors!</p>
 <p>The users are obviously impacted, so let's scale the application back down:</p>
 <div class="highlight"><pre><span></span><code>kubectl scale --replicas=1 deployment/srp-server
 </code></pre></div>
-
 <p>Fortunately, the errors are gone now. However, what remains is the sour aftertaste of Kubernetes failing its promise to facilitate scalability.</p>
 <h2 id="what-happened">What Happened?</h2>
 <p>It sadly became obvious that we cannot simply deploy the application without understanding how it works. Let us look closer at SRP. The sequence diagram from <a href="https://github.com/simbo1905/thinbus-srp-npm">simbo1905</a> explains it best:</p>
@@ -547,7 +548,6 @@ srp-server-7f7dfc86fd-tt2rv   1/1     Running   0          8m38s
 <p>But wait! If <code>srp-server</code> is scaled to two replicas, what happens to the challenge cache? A quick inspection of <code>code/srp-server/srp-server.go</code> reveals that the challenge cache is local to each replica:</p>
 <div class="highlight"><pre><span></span><code>var authSessionCache = map[string](*srp.SRPServer){}
 </code></pre></div>
-
 <p>As Kubernetes tries to balance the load across replicas, the likelihood of the client getting the challenge from one replica and authenticating against a different replica is high.</p>
 <div class="admonition note">
 <p class="admonition-title">Nobody makes such an obvious mistake!</p>
@@ -572,11 +572,9 @@ srp-server-7f7dfc86fd-tt2rv   1/1     Running   0          8m38s
 <div class="highlight"><pre><span></span><code>helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install redis bitnami/redis
 </code></pre></div>
-
 <p>Now let's change the application to store the challenge cache in Redis. Thanks to the magic of tutorials, the source code is already available in <code>srp-server-redis</code>. I here assume that you are able to read Go code, although you are not required to be a Go programmer to understand this part. I suggest you look at the changes using side-by-side diff:</p>
 <div class="highlight"><pre><span></span><code>diff --exclude <span class="s1">&#39;go.*&#39;</span> -ru srp-server srp-server-redis <span class="p">|</span> less -S
 </code></pre></div>
-
 <details class="note"><summary>Selected output of diff</summary><div class="tabbed-set" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">diff of srp-server.go</label><div class="tabbed-content">
 <div class="highlight"><pre><span></span><code><span class="gu">@@ -12 +17 @@</span>
 <span class="gd">-var authSessionCache = map[string](*srp.SRPServer){}</span>
@@ -625,7 +623,6 @@ helm install redis bitnami/redis
 <span class="gi">+       log.Fatalln(pong, err)</span>
 <span class="gi">+   }</span>
 </code></pre></div>
-
 </div>
 <input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><label for="__tabbed_2_2">diff of deploy/srp-server-deployment.yaml</label><div class="tabbed-content">
 <div class="highlight"><pre><span></span><code><span class="gu">@@ -18 +18 @@</span>
@@ -641,7 +638,6 @@ helm install redis bitnami/redis
 <span class="gi">+                name: redis</span>
 <span class="gi">+                key: &quot;redis-password&quot;</span>
 </code></pre></div>
-
 </div>
 </div>
 </details>
@@ -654,15 +650,12 @@ docker build -t srp-server-redis srp-server-redis
 kubectl apply -f srp-server-redis/deploy
 kubectl get pods
 </code></pre></div>
-
 <p>Look at the terminal where the client is running. You should see all green with a single <code>srp-server-redis</code> replica, but did we solve the original problem of scaling up?</p>
 <div class="highlight"><pre><span></span><code>kubectl scale --replicas<span class="o">=</span><span class="m">3</span> deployment/srp-server
 </code></pre></div>
-
 <p>Let's watch the replicas coming up:</p>
 <div class="highlight"><pre><span></span><code>kubectl get pods
 </code></pre></div>
-
 <p>Now look at the client terminal. There should be zero impact on your client requests and you should see all green.</p>
 <p>Great! We now have a service that we can properly scale up with zero downtime.</p>
 <h2 id="takeaways">Takeaways</h2>
@@ -684,31 +677,30 @@ kubectl get pods
             </article>
           </div>
         </div>
+        
       </main>
       
         
 <footer class="md-footer">
   
-    <div class="md-footer-nav">
-      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
-        
-          <a href=".." title="Home" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
-            <div class="md-footer-nav__button md-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        <a href=".." class="md-footer__link md-footer__link--prev" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Home
             </div>
-            <div class="md-footer-nav__title">
-              <div class="md-ellipsis">
-                <span class="md-footer-nav__direction">
-                  Previous
-                </span>
-                Home
-              </div>
-            </div>
-          </a>
-        
-        
-      </nav>
-    </div>
+          </div>
+        </a>
+      
+      
+    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -722,6 +714,7 @@ kubectl get pods
         <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
           Material for MkDocs
         </a>
+        
       </div>
       
     </div>
@@ -729,19 +722,13 @@ kubectl get pods
 </footer>
       
     </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../assets/javascripts/workers/search.fe42c31b.min.js", "version": null}</script>
     
-      <script src="../assets/javascripts/vendor.df0def68.min.js"></script>
-      <script src="../assets/javascripts/bundle.ba57d267.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
-      
-      <script>
-        app = initialize({
-          base: "..",
-          features: [],
-          search: Object.assign({
-            worker: "../assets/javascripts/worker/search.fae956e7.min.js"
-          }, typeof search !== "undefined" && search)
-        })
-      </script>
+    
+      <script src="../assets/javascripts/bundle.4ea5477f.min.js"></script>
       
     
   </body>
