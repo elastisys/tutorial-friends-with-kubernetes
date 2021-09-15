@@ -1,9 +1,11 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: srp-server
   labels:
     app: srp-server
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
   - http:
@@ -11,5 +13,7 @@ spec:
       - path: /auth
         pathType: Prefix
         backend:
-          serviceName: srp-server
-          servicePort: 8080
+          service:
+            name: srp-server
+            port:
+              number: 8080
