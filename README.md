@@ -2,6 +2,8 @@
 
 This is a series of tutorial aims at teaching people on what application-side modifications are necessary before adopting Kubernetes.
 
+The website is published [here](https://elastisys.github.io/tutorial-friends-with-kubernetes/).
+
 ## Prerequisites
 
 ```
