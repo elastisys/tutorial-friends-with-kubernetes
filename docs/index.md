@@ -54,7 +54,7 @@ minikube addons enable ingress
 Check that everything works, as follows:
 
 ```
-kubectl get -n kube-system deploy ingress-nginx-controller > /dev/null && echo "==> kubectl and minikube work"
+kubectl get -n ingress-nginx deploy ingress-nginx-controller > /dev/null && echo "==> kubectl and minikube work"
 
 eval $(minikube docker-env)
 docker ps > /dev/null && echo "==> minikube's docker works"
